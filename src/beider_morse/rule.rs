@@ -4,10 +4,10 @@ use std::fmt::{Debug, Display, Formatter};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
+use super::notregex::Regex;
 use either::Either;
 use enum_iterator::{all, Sequence};
 use nom::Parser;
-use regex::Regex;
 use serde::{Deserialize, Serialize};
 
 use super::{IsMatch, LanguageSet};

@@ -2,9 +2,9 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::{Display, Formatter};
 use std::path::Path;
 
+use super::notregex::Regex;
 use enum_iterator::all;
 use nom::Parser;
-use regex::Regex;
 
 use crate::beider_morse::{LanguageSet, Languages};
 use crate::{build_error, end_of_line, lang, multiline_comment, BMError, NameType, PhoneticError};

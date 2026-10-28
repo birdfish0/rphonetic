@@ -78,6 +78,7 @@ mod double_metaphone;
 mod helper;
 mod match_rating_approach;
 mod metaphone;
+mod notregex;
 mod nysiis;
 mod phonex;
 mod refined_soundex;
@@ -116,8 +117,8 @@ impl From<std::io::Error> for PhoneticError {
     }
 }
 
-impl From<regex::Error> for PhoneticError {
-    fn from(error: regex::Error) -> Self {
+impl From<notregex::RegexParseError> for PhoneticError {
+    fn from(error: notregex::RegexParseError) -> Self {
         Self::BMError(BMError::from(error))
     }
 }

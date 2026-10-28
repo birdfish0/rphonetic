@@ -3,9 +3,9 @@ use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
 use std::str::FromStr;
 
+use crate::notregex::{self, Regex};
 use either::Either;
 use enum_iterator::Sequence;
-use regex::Regex;
 use regex_optim::OptimizedRegex;
 pub use rule::RuleType;
 use serde::{Deserialize, Serialize};
@@ -54,7 +54,7 @@ pub enum BMError {
     WrongPhoneme(String),
     /// This error is raised when a regex in a rule file is wrong
     #[error(transparent)]
-    BadContextRegex(#[from] regex::Error),
+    BadContextRegex(#[from] notregex::RegexParseError),
     /// This error is raised when trying to parse a boolean in a rule
     /// file. Boolean should be either true or false.
     #[error("{0} is not a boolean")]

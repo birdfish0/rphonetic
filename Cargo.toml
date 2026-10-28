@@ -27,7 +27,6 @@ embedded_bm = []
 embedded_dm = []
 
 [dependencies]
-regex = "1.11"
 nom = "8.0"
 serde = { version = "1.0", features = ["derive"] }
 enum-iterator = "2.0"
