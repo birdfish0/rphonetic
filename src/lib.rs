@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-//! This library contains a set of phonetic algorithms from [Apache commons-codec](https://commons.apache.org/proper/commons-codec/)
+//! This library contains a set of phonetic algorithms from the [Apache commons-codec](https://commons.apache.org/proper/commons-codec/)
 //! written in Rust.
 //!
 //! It currently implements :
@@ -32,7 +32,7 @@
 //! * [BeiderMorse] : see [Wikipedia](https://en.wikipedia.org/wiki/Daitch%E2%80%93Mokotoff_Soundex#Beider%E2%80%93Morse_Phonetic_Name_Matching_Algorithm)
 //! * [Phonex] see [paper](https://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=E3997DC51F2046A95EE6459F2B997029?doi=10.1.1.453.4046&rep=rep1&type=pdf)
 //!
-//! Please note that most of these algorithms are design for ASCII, and they are usually design for certain use case (eg.
+//! Please note that most of these algorithms are designed for ASCII, and they are usually designed with a certain use case in mind (eg.
 //! english names, ...etc).
 //!
 //! ## Feature flags
@@ -85,7 +85,7 @@ mod rules_parser;
 mod soundex;
 
 /// This represents a parsing error. It contains the
-/// line number, the line, and if possible the filename.
+/// line number, the line, and, if possible, the filename.
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq, Hash, Error, Serialize, Deserialize)]
 #[error("{}:{line_number} {description} : {line_content}", filename.clone().unwrap_or_else(|| "Unknown".to_string()))]
 pub struct ParseError {
@@ -93,7 +93,7 @@ pub struct ParseError {
     pub line_number: usize,
     /// Filename
     pub filename: Option<String>,
-    /// Wrong line
+    /// Contents of the erroneous line
     pub line_content: String,
     /// Description
     pub description: String,
@@ -105,7 +105,7 @@ pub enum PhoneticError {
     /// This variant contains parsing errors.
     #[error("Error parsing rule file {0}")]
     ParseRuleError(#[from] ParseError),
-    /// This error contains errors related to Beider Morse.
+    /// This error contains errors related to [Beider Morse][BeiderMorse].
     #[error("Error : {0}")]
     BMError(#[from] BMError),
 }
@@ -145,13 +145,13 @@ fn build_error(
 
 /// This trait represents a phonetic algorithm.
 pub trait Encoder {
-    /// This method convert a string into its code.
+    /// This method converts a string into its code.
     ///
-    /// # Parameter
+    /// # Parameters
     ///
     /// * `s` : string to encode.
     ///
-    /// # Return
+    /// # Returns
     ///
     /// String encoded.
     ///
@@ -168,16 +168,17 @@ pub trait Encoder {
     /// ```
     fn encode(&self, s: &str) -> String;
 
-    /// This method check that two strings have the same code.
+    /// This method checks if two strings have the same code
+    /// (ie. if they are equal after being [encode][Self::encode]d).
     ///
     /// # Parameters
     ///
     /// * `first` : first string.
     /// * `second` : second string.
     ///
-    /// # Return
+    /// # Returns
     ///
-    /// Return `true` if both strings have the same code, false otherwise.
+    /// Returns `true` if both strings have the same code, `false` otherwise.
     ///
     /// # Example
     ///
@@ -187,7 +188,9 @@ pub trait Encoder {
     /// use rphonetic::{Encoder, Caverphone1};
     ///
     /// let caverphone = Caverphone1;
+    /// // "PT1111" != "STFNSN"
     /// assert!(!caverphone.is_encoded_equals("Peter", "Stevenson"));
+    /// // "PT1111" == "PT1111"
     /// assert!(caverphone.is_encoded_equals("Peter", "Peady"));
     /// ```
     fn is_encoded_equals(&self, first: &str, second: &str) -> bool {
@@ -208,12 +211,12 @@ trait SoundexUtils {
     }
 }
 
-/// This trait represent a soundex algorithm (except for [Nysiis]).
+/// This trait represents a soundex algorithm (except for [Nysiis]).
 ///
 /// It has a method, [difference(value1, value2)](Soundex::difference) that returns
-/// the number of letter that are at the same place in both encoded strings.
+/// the number of letters that are in the same place in both encoded strings.
 pub trait SoundexCommons: Encoder {
-    /// This methode compute the number of characters thar are at the same place
+    /// This method computes the number of characters that are in the same place
     /// in both encoded strings.
     ///
     /// It calls [encode(value)](Encoder::encode).
@@ -224,7 +227,7 @@ pub trait SoundexCommons: Encoder {
     /// * `value1` : first value
     /// * `value2` : second value
     ///
-    /// # Return
+    /// # Returns
     ///
     /// The number of characters at the same position. 0 indicates no similarities, while 4 (out of 4)
     /// indicates strong similarity. Please note that [RefinedSoundex] difference can be greater than 4.
@@ -238,24 +241,24 @@ pub trait SoundexCommons: Encoder {
     ///
     /// let refined_soundex = RefinedSoundex::default();
     ///
-    /// // Low similarity
+    /// // Low similarity: M80940906 and A08690
     /// assert_eq!(refined_soundex.difference("Margaret", "Andrew"), 1);
     ///
-    /// // High similarity
+    /// // High similarity: S3806093 and S3806093
     /// assert_eq!(refined_soundex.difference("Smithers", "Smythers"), 8);
     /// ```
     ///
-    /// With [Soundex], maximum proximity will be 4 as values are coded with 4 characters :
+    /// With [Soundex], the maximum similarity value will be 4, as values are encoded into a 4-character string:
     ///
     /// ```rust
     /// use rphonetic::{Soundex, SoundexCommons};
     ///
     /// let soundex = Soundex::default();
     ///
-    /// // Low similarity
+    /// // Low similarity: M626 and A536
     /// assert_eq!(soundex.difference("Margaret", "Andrew"), 1);
     ///
-    /// // High similarity
+    /// // High similarity: S536 and S536
     /// assert_eq!(soundex.difference("Smithers", "Smythers"), 4);
     /// ```
     fn difference(&self, value1: &str, value2: &str) -> usize {
