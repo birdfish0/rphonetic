@@ -1,12 +1,11 @@
-use std::{error::Error, fmt::Display};
+use std::fmt::Display;
 
 use self::Pattern::*;
 
 #[derive(PartialEq, Eq, Clone, Debug)]
 enum Pattern {
     Sequence(String),
-    NotChar(Vec<char>),
-    IsChar(Vec<char>),
+    Possibilities(Vec<char>, bool), // possibilities, include (true) / exclude (false)
     LineStart,
     LineEnd,
 }
@@ -39,11 +38,12 @@ impl Display for Regex {
         let mut outstr = String::new();
         for pat in &self.patterns {
             match pat {
-                IsChar(chrs) => {
-                    outstr = outstr + "[" + &chrs.iter().collect::<String>() + "]";
-                }
-                NotChar(chrs) => {
-                    outstr = outstr + "[^" + &chrs.iter().collect::<String>() + "]";
+                Possibilities(chrs, include) => {
+                    outstr = outstr
+                        + "["
+                        + if *include { "" } else { "^" }
+                        + &chrs.iter().collect::<String>()
+                        + "]";
                 }
                 LineStart => {
                     outstr += "^";
@@ -68,8 +68,8 @@ impl Regex {
                 return false;
             }
             if !match pat {
-                IsChar(is) => {
-                    let res = is.iter().any(|c| *c == chars[idx + offset]);
+                Possibilities(chrs, include) => {
+                    let res = include ^ chrs.iter().all(|c| *c != chars[idx + offset]); // `include XOR exclude_result` gives `exclude_result` when excluding and `!exclude_result` when including
                     idx += 1;
                     res
                 }
@@ -84,11 +84,6 @@ impl Regex {
                     }
                 }
                 LineStart => idx + offset == 0 || chars[idx + offset - 1] == '\n',
-                NotChar(exclude) => {
-                    let res = exclude.iter().all(|c| *c != chars[idx + offset]);
-                    idx += 1;
-                    res
-                }
                 Sequence(seq) => {
                     let mut seqchars = seq.chars();
                     let mut res = true;
@@ -120,21 +115,12 @@ impl Regex {
         while let Some(cchar) = chars.next() {
             if let Some(ref mut pattern) = curr_pattern {
                 match pattern {
-                    IsChar(find) => {
+                    Possibilities(chrs, _) => {
                         if cchar == ']' {
                             patterns.push(pattern.to_owned());
                             curr_pattern = None;
                         } else {
-                            find.push(cchar);
-                        }
-                        continue;
-                    }
-                    NotChar(find) => {
-                        if cchar == ']' {
-                            patterns.push(pattern.to_owned());
-                            curr_pattern = None;
-                        } else {
-                            find.push(cchar);
+                            chrs.push(cchar);
                         }
                         continue;
                     }
@@ -147,9 +133,9 @@ impl Regex {
                         patterns.push(patt);
                     }
                     if nextchar == '^' {
-                        curr_pattern = Some(NotChar(Vec::new()));
+                        curr_pattern = Some(Possibilities(Vec::new(), false));
                     } else {
-                        curr_pattern = Some(IsChar(vec![nextchar]));
+                        curr_pattern = Some(Possibilities(vec![nextchar], true));
                     }
                     continue;
                 } else {
@@ -187,15 +173,10 @@ impl Regex {
         }
         if let Some(p) = curr_pattern {
             match p {
-                IsChar(include) => {
-                    let pat_str = "[".to_owned() + &include.iter().collect::<String>();
-                    return Err(RegexParseError {
-                        description: format!("Expected rest of expression `{}`, got EOF.", pat_str),
-                        failed_content: input.to_owned(),
-                    });
-                }
-                NotChar(include) => {
-                    let pat_str = "[^".to_owned() + &include.iter().collect::<String>();
+                Possibilities(chrs, include) => {
+                    let pat_str = "[".to_owned()
+                        + if include { "" } else { "^" }
+                        + &chrs.iter().collect::<String>();
                     return Err(RegexParseError {
                         description: format!("Expected rest of expression `{}`, got EOF.", pat_str),
                         failed_content: input.to_owned(),
