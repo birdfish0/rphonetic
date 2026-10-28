@@ -21,7 +21,7 @@ use crate::{helper, Encoder};
 const SIX_1: &str = "111111";
 const TEN_1: &str = "1111111111";
 
-/// This a [Caverphone 1](https://en.wikipedia.org/wiki/Caverphone) encoder.
+/// This a [Caverphone 1](https://en.wikipedia.org/wiki/Caverphone#Caverphone_1.0) encoder.
 ///
 /// # Example
 ///
@@ -139,7 +139,7 @@ impl Encoder for Caverphone1 {
     }
 }
 
-/// This a [Caverphone 2](https://en.wikipedia.org/wiki/Caverphone) encoder.
+/// This a [Caverphone 2](https://en.wikipedia.org/wiki/Caverphone#Caverphone_2.0) encoder.
 ///
 /// # Example
 ///
@@ -276,7 +276,9 @@ impl Encoder for Caverphone2 {
 
 #[cfg(test)]
 mod tests {
-    /// These tests are the same as commons-codec.
+    /// These tests are from commons-codec:
+    /// <https://github.com/apache/commons-codec/blob/30ac06eb5d34b5bb83e4eb4683cce0ac03d94da3/src/test/java/org/apache/commons/codec/language/Caverphone1Test.java>
+    /// and <https://github.com/apache/commons-codec/blob/30ac06eb5d34b5bb83e4eb4683cce0ac03d94da3/src/test/java/org/apache/commons/codec/language/Caverphone2Test.java>.
     use super::*;
 
     #[test]
